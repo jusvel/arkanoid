@@ -5,4 +5,6 @@ module com.game.arkanoid {
 
     opens com.game.arkanoid to javafx.fxml;
     exports com.game.arkanoid;
+    exports com.game.arkanoid.viewControllers;
+    opens com.game.arkanoid.viewControllers to javafx.fxml;
 }

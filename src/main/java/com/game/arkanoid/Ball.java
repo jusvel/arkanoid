@@ -14,8 +14,7 @@ public class Ball {
         this.x = x;
         this.y = y;
         this.radius = radius;
-
-        circle = new Circle(x, y, radius, Color.RED);
+        circle = new Circle(x, y, radius, Color.BLACK);
     }
 
     public Circle getCircle() {
