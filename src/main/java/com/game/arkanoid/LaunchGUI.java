@@ -11,7 +11,7 @@ public class LaunchGUI extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(LaunchGUI.class.getResource("mainMenuView.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 350, 500);
+        Scene scene = new Scene(fxmlLoader.load(), 560, 800);
 
         stage.setTitle("Arkanoid");
         stage.setScene(scene);

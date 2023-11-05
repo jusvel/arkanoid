@@ -9,7 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class mainMenuController {
+public class MainMenuController {
     @FXML
     private VBox vbox;
 
@@ -26,15 +26,6 @@ public class mainMenuController {
             FXMLLoader fxmlLoader = new FXMLLoader(LaunchGUI.class.getResource("gameView.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 560, 800);
             GameViewController controller = fxmlLoader.getController();
-
-//            scene.setOnKeyPressed(event -> {
-//                KeyCode code = event.getCode();
-//                if (code == KeyCode.LEFT) {
-//                    controller.movePaddleLeft();
-//                } else if (code == KeyCode.RIGHT) {
-//                    controller.movePaddleRight();
-//                }
-//            });
 
             Stage stage = (Stage) vbox.getScene().getWindow();
             stage.setTitle("Arkanoid");

@@ -1,31 +1,35 @@
 package com.game.arkanoid;
 
+import javafx.animation.Timeline;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 public class CollisionHandler {
-    public static void checkCollisions(Ball ball, Paddle paddle, Pane gamePane, Label scoreLabel, int score){
-        if (ball.getCircle().getBoundsInParent().intersects(paddle.getRectangle().getBoundsInParent())) handleBallPaddleCollision(ball, paddle);
-        handleBallWallCollision(ball, gamePane);
-        handleBallBrickCollision(ball, gamePane, scoreLabel, score);
-        handleLoss(ball, gamePane);
-        handleWin(gamePane);
-    }
-
-    private static void handleBallPaddleCollision(Ball ball, Paddle paddle) {
+    public static void checkCollisions(Ball ball, Paddle paddle, Pane gamePane, Label scoreLabel, int score, Timeline gameLoop){
         Bounds ballBounds = ball.getCircle().getBoundsInParent();
         Bounds paddleBounds = paddle.getRectangle().getBoundsInParent();
 
+        handleBallPaddleCollision(ball, paddle, ballBounds, paddleBounds);
+        handleBallWallCollision(ball, gamePane);
+        handleBallBrickCollision(ball, ballBounds, gamePane, scoreLabel, score);
+        handleLoss(ball, gamePane, gameLoop);
+        handleWin(gamePane, gameLoop);
+    }
+
+    private static void handleBallPaddleCollision(Ball ball, Paddle paddle, Bounds ballBounds, Bounds paddleBounds) {
         if (ballBounds.intersects(paddleBounds)) {
-            double ballCenterX = ballBounds.getMinX() + ballBounds.getWidth() / 2;
+            double ballCenterX = ball.getCircle().getCenterX();
             double paddleCenterX = paddleBounds.getMinX() + paddleBounds.getWidth() / 2;
 
             double relativeIntersectX = (paddleCenterX - ballCenterX) / (paddleBounds.getWidth() / 2);
-            double maxBounceAngle = Math.toRadians(60);
 
-            double bounceAngle = relativeIntersectX * maxBounceAngle;
+            double bounceAngle = relativeIntersectX * Math.toRadians(60);
 
             double speed = Math.sqrt(ball.getDx() * ball.getDx() + ball.getDy() * ball.getDy());
 
@@ -37,20 +41,21 @@ public class CollisionHandler {
     }
 
     private static void handleBallWallCollision(Ball ball, Pane gamePane) {
-        if (ball.getCircle().getCenterX() <= ball.getRadius() ||
-                ball.getCircle().getCenterX() >= gamePane.getWidth() - ball.getRadius()) {
+        double ballCenterX = ball.getCircle().getCenterX();
+        double ballCenterY = ball.getCircle().getCenterY();
+        double ballRadius = ball.getRadius();
+
+        if (ballCenterX <= ballRadius || ballCenterX >= gamePane.getWidth() - ballRadius) {
             ball.setVelocity(-ball.getDx(), ball.getDy());
         }
-
-        if (ball.getCircle().getCenterY() <= ball.getRadius()) {
+        if (ballCenterY <= ballRadius) {
             ball.setVelocity(ball.getDx(), -ball.getDy());
         }
     }
 
-    private static void handleBallBrickCollision(Ball ball, Pane gamePane, Label scoreLabel, int score) {
+    private static void handleBallBrickCollision(Ball ball, Bounds ballBounds, Pane gamePane, Label scoreLabel, int score) {
         for (Node brick : gamePane.getChildren()) {
-            if (brick.getId() != null && brick.getId().equals("brick") && ball.getCircle().getBoundsInParent().intersects(brick.getBoundsInParent())) {
-                System.out.println("Collision detected");
+            if (brick.getId() != null && brick.getId().equals("brick") && ballBounds.intersects(brick.getBoundsInParent())) {
                 gamePane.getChildren().remove(brick);
                 ball.setVelocity(ball.getDx(), -ball.getDy());
                 scoreLabel.setText("Score: " + (score++));
@@ -59,11 +64,28 @@ public class CollisionHandler {
         }
     }
 
-    private static void handleLoss(Ball ball, Pane gamePane) {
-
+    private static void handleLoss(Ball ball, Pane gamePane, Timeline gameLoop) {
+        if (ball.getCircle().getCenterY() > gamePane.getHeight()) {
+            gameLoop.stop();
+            showTextOnScreen(gamePane, "You lost, press q", Color.RED);
+        }
     }
 
-    private static void handleWin(Pane gamePane) {
+    private static void handleWin(Pane gamePane, Timeline gameLoop) {
+        if (gamePane.getChildren().size() == 2) {
+            gameLoop.stop();
+            showTextOnScreen(gamePane, "You won, press q", Color.LIGHTGREEN);
+        }
+    }
 
+    private static void showTextOnScreen(Pane gamePane, String text, Color color) {
+        Text lossText;
+        lossText = new Text(text);
+        lossText.setFont(Font.font("Arial", FontWeight.BOLD, 30));
+        lossText.setFill(color);
+        lossText.setVisible(true);
+        lossText.setX((gamePane.getWidth() - lossText.getLayoutBounds().getWidth()) / 2);
+        lossText.setY((gamePane.getHeight() - lossText.getLayoutBounds().getHeight()) / 2);
+        gamePane.getChildren().add(lossText);
     }
 }

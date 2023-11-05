@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="350.0" spacing="40.0" style="-fx-alignment: center; -fx-background-color: linear-gradient(to bottom, #102b55, #002f70, #00328b, #0033a5, #0031be);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.game.arkanoid.viewControllers.mainMenuController">
+<VBox fx:id="vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="350.0" spacing="40.0" style="-fx-alignment: center; -fx-background-color: linear-gradient(to bottom, #102b55, #002f70, #00328b, #0033a5, #0031be);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.game.arkanoid.viewControllers.MainMenuController">
    <children>
       <Label text="Arkanoid" textFill="#00f9ff">
          <font>

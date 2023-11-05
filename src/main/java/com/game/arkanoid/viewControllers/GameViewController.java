@@ -2,35 +2,30 @@ package com.game.arkanoid.viewControllers;
 
 import com.game.arkanoid.Ball;
 import com.game.arkanoid.CollisionHandler;
+import com.game.arkanoid.LaunchGUI;
 import com.game.arkanoid.Paddle;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class GameViewController {
-
-    //TODO add pause button
-    //TODO add game over screen
-    //TODO add win screen
     //TODO add score
-    //TODO add paddle bounds
-    //TODO quit button
-    //TODO refactor check collisions
-
-
-
     @FXML
     public Pane gamePane;
     @FXML
     public Label scoreLabel;
+    @FXML
+    Label countDownLabel;
 
     private Paddle paddle;
     private Ball ball;
@@ -46,9 +41,28 @@ public class GameViewController {
         addBricksToGamePane(level);
         setUpPaddle();
         setUpBall();
+        setUpKeybinds();
 
-        startGameLoop();
+        setUpCountDownLabel();
+
+        countDownThenStartGame();
     }
+
+
+    private void countDownThenStartGame() {
+        Timeline countDown = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            int count = Integer.parseInt(countDownLabel.getText());
+            count--;
+            countDownLabel.setText(String.valueOf(count));
+        }));
+        countDown.setCycleCount(3);
+        countDown.setOnFinished(e -> {
+            gamePane.getChildren().remove(countDownLabel);
+            startGameLoop();
+        });
+        countDown.play();
+    }
+
 
     public void startGameLoop() {
         gameLoop = new Timeline(new KeyFrame(Duration.millis(5), e -> {moveBall();}));
@@ -58,7 +72,7 @@ public class GameViewController {
 
     public void moveBall() {
         ball.move();
-        CollisionHandler.checkCollisions(ball, paddle, gamePane, scoreLabel, score);
+        CollisionHandler.checkCollisions(ball, paddle, gamePane, scoreLabel, score, gameLoop);
     }
 
     private void setUpBall() {
@@ -70,22 +84,33 @@ public class GameViewController {
     private void setUpPaddle() {
         paddle = new Paddle(205, 660, 3.0);
         gamePane.getChildren().add(paddle.getRectangle());
-        addControlsToPaddle();
     }
 
 
-    private void addControlsToPaddle() {
+    private void setUpKeybinds() {
         Scene scene = gamePane.getScene();
 
         scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.RIGHT) rightKeyPressed = true;
-            else if (event.getCode() == KeyCode.LEFT) leftKeyPressed = true;
+            if (event.getCode() == KeyCode.RIGHT) {
+                rightKeyPressed = true;
+            } else if (event.getCode() == KeyCode.LEFT) {
+                leftKeyPressed = true;
+            } else if(event.getCode() == KeyCode.P){
+                if(gameLoop.getStatus() == Timeline.Status.RUNNING){
+                    gameLoop.stop();
+                } else {
+                    gameLoop.play();
+                }
+            } else if(event.getCode() == KeyCode.Q){
+                loadMainMenu();
+            }
         });
 
         scene.setOnKeyReleased(event -> {
             if (event.getCode() == KeyCode.RIGHT) rightKeyPressed = false;
             else if (event.getCode() == KeyCode.LEFT) leftKeyPressed = false;
         });
+
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -94,9 +119,18 @@ public class GameViewController {
         }.start();
     }
 
+
+
     public void movePaddle() {
-        if (rightKeyPressed) paddle.getRectangle().setLayoutX(paddle.getRectangle().getLayoutX() + paddle.getSpeed());
-        else if (leftKeyPressed) paddle.getRectangle().setLayoutX(paddle.getRectangle().getLayoutX() - paddle.getSpeed());
+        Rectangle paddleRectangle = paddle.getRectangle();
+        double paddleX = paddleRectangle.getLayoutX();
+        double paddleWidth = paddleRectangle.getWidth();
+
+        if (rightKeyPressed && (paddleX + paddleWidth) < gamePane.getWidth()-205) {
+            paddleRectangle.setLayoutX(paddleX + paddle.getSpeed());
+        } else if (leftKeyPressed && paddleX > -205) {
+            paddleRectangle.setLayoutX(paddleX - paddle.getSpeed());
+        }
     }
 
     private void addBricksToGamePane(int rows) {
@@ -107,6 +141,29 @@ public class GameViewController {
                 brick.setId("brick");
                 gamePane.getChildren().add(brick);
             }
+        }
+    }
+
+    private void setUpCountDownLabel() {
+        countDownLabel = new Label("3");
+        countDownLabel.setLayoutX(240);
+        countDownLabel.setLayoutY(350);
+        countDownLabel.setStyle("-fx-font-size: 100px; -fx-font-weight: bold; -fx-text-fill: red;");
+        gamePane.getChildren().add(countDownLabel);
+    }
+
+    private void loadMainMenu() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(LaunchGUI.class.getResource("mainMenuView.fxml"));
+            Scene menuScene = new Scene(fxmlLoader.load(), 560, 800);
+            Stage stage = (Stage) gamePane.getScene().getWindow();
+            stage.setTitle("Arkanoid");
+            stage.setScene(menuScene);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (Exception e){
+            System.out.println("Failed to load gameView.fxml");
+            e.printStackTrace();
         }
     }
 }
