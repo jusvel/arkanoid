@@ -19,7 +19,13 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class GameViewController {
-    //TODO add score
+    static final double PADDLE_SPEED = 3.0;
+    static final double BALL_RADIUS = 10.0;
+    static final int BRICK_WIDTH = 102;
+    static final int BRICK_HEIGHT = 30;
+    static final int GAP = 5;
+    private static final Color BRICK_COLOR = Color.rgb(255, 0, 0, 0.5);
+
     @FXML
     public Pane gamePane;
     @FXML
@@ -30,8 +36,6 @@ public class GameViewController {
     private Paddle paddle;
     private Ball ball;
 
-    private int score = 1;
-
     Timeline gameLoop;
 
     private boolean rightKeyPressed = false;
@@ -41,13 +45,11 @@ public class GameViewController {
         addBricksToGamePane(level);
         setUpPaddle();
         setUpBall();
-        setUpKeybinds();
+        setUpKeybindings();
 
         setUpCountDownLabel();
-
         countDownThenStartGame();
     }
-
 
     private void countDownThenStartGame() {
         Timeline countDown = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
@@ -63,7 +65,6 @@ public class GameViewController {
         countDown.play();
     }
 
-
     public void startGameLoop() {
         gameLoop = new Timeline(new KeyFrame(Duration.millis(5), e -> {moveBall();}));
         gameLoop.setCycleCount(Timeline.INDEFINITE);
@@ -72,22 +73,21 @@ public class GameViewController {
 
     public void moveBall() {
         ball.move();
-        CollisionHandler.checkCollisions(ball, paddle, gamePane, scoreLabel, score, gameLoop);
+        CollisionHandler.checkCollisions(ball, paddle, gamePane, scoreLabel, gameLoop);
     }
 
     private void setUpBall() {
-        ball = new Ball(260, 350, 10);
+        ball = new Ball(260, 350, BALL_RADIUS);
         gamePane.getChildren().add(ball.getCircle());
         ball.setVelocity(0, 3);
     }
 
     private void setUpPaddle() {
-        paddle = new Paddle(205, 660, 3.0);
+        paddle = new Paddle(205, 660, PADDLE_SPEED);
         gamePane.getChildren().add(paddle.getRectangle());
     }
 
-
-    private void setUpKeybinds() {
+    private void setUpKeybindings() {
         Scene scene = gamePane.getScene();
 
         scene.setOnKeyPressed(event -> {
@@ -96,11 +96,7 @@ public class GameViewController {
             } else if (event.getCode() == KeyCode.LEFT) {
                 leftKeyPressed = true;
             } else if(event.getCode() == KeyCode.P){
-                if(gameLoop.getStatus() == Timeline.Status.RUNNING){
-                    gameLoop.stop();
-                } else {
-                    gameLoop.play();
-                }
+                toggleGamePause();
             } else if(event.getCode() == KeyCode.Q){
                 loadMainMenu();
             }
@@ -119,8 +115,6 @@ public class GameViewController {
         }.start();
     }
 
-
-
     public void movePaddle() {
         Rectangle paddleRectangle = paddle.getRectangle();
         double paddleX = paddleRectangle.getLayoutX();
@@ -133,11 +127,13 @@ public class GameViewController {
         }
     }
 
-    private void addBricksToGamePane(int rows) {
-        for (int i = 0; i < rows*2; i++) {
+    private void addBricksToGamePane(int level) {
+        for (int i = 0; i < level*2; i++) {
             for (int j = 0; j < 5; j++) {
-                Rectangle brick = new Rectangle((107 * j)+5, (35 * i)+5, 102, 30);
-                brick.setFill(Color.WHEAT);
+                int x = ((BRICK_WIDTH+GAP) * j)+GAP;
+                int y = ((BRICK_HEIGHT+GAP) * i)+GAP;
+                Rectangle brick = new Rectangle(x, y, BRICK_WIDTH, BRICK_HEIGHT);
+                brick.setFill(BRICK_COLOR);
                 brick.setId("brick");
                 gamePane.getChildren().add(brick);
             }
@@ -150,6 +146,15 @@ public class GameViewController {
         countDownLabel.setLayoutY(350);
         countDownLabel.setStyle("-fx-font-size: 100px; -fx-font-weight: bold; -fx-text-fill: red;");
         gamePane.getChildren().add(countDownLabel);
+    }
+
+    private void toggleGamePause() {
+        if(gameLoop.getStatus() == Timeline.Status.RUNNING){
+            setUpCountDownLabel();
+            gameLoop.stop();
+        } else {
+            countDownThenStartGame();
+        }
     }
 
     private void loadMainMenu() {

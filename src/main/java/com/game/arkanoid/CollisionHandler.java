@@ -11,18 +11,18 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 public class CollisionHandler {
-    public static void checkCollisions(Ball ball, Paddle paddle, Pane gamePane, Label scoreLabel, int score, Timeline gameLoop){
+    public static void checkCollisions(Ball ball, Paddle paddle, Pane gamePane, Label scoreLabel, Timeline gameLoop){
         Bounds ballBounds = ball.getCircle().getBoundsInParent();
         Bounds paddleBounds = paddle.getRectangle().getBoundsInParent();
 
-        handleBallPaddleCollision(ball, paddle, ballBounds, paddleBounds);
+        handleBallPaddleCollision(ball, ballBounds, paddleBounds);
         handleBallWallCollision(ball, gamePane);
-        handleBallBrickCollision(ball, ballBounds, gamePane, scoreLabel, score);
+        handleBallBrickCollision(ball, ballBounds, gamePane, scoreLabel);
         handleLoss(ball, gamePane, gameLoop);
         handleWin(gamePane, gameLoop);
     }
 
-    private static void handleBallPaddleCollision(Ball ball, Paddle paddle, Bounds ballBounds, Bounds paddleBounds) {
+    private static void handleBallPaddleCollision(Ball ball, Bounds ballBounds, Bounds paddleBounds) {
         if (ballBounds.intersects(paddleBounds)) {
             double ballCenterX = ball.getCircle().getCenterX();
             double paddleCenterX = paddleBounds.getMinX() + paddleBounds.getWidth() / 2;
@@ -53,15 +53,25 @@ public class CollisionHandler {
         }
     }
 
-    private static void handleBallBrickCollision(Ball ball, Bounds ballBounds, Pane gamePane, Label scoreLabel, int score) {
+    private static void handleBallBrickCollision(Ball ball, Bounds ballBounds, Pane gamePane, Label scoreLabel) {
         for (Node brick : gamePane.getChildren()) {
             if (brick.getId() != null && brick.getId().equals("brick") && ballBounds.intersects(brick.getBoundsInParent())) {
-                gamePane.getChildren().remove(brick);
-                ball.setVelocity(ball.getDx(), -ball.getDy());
-                scoreLabel.setText("Score: " + (score++));
+                handleBrickCollision(ball, gamePane, scoreLabel, brick);
                 break;
             }
         }
+    }
+
+    private static void handleBrickCollision(Ball ball, Pane gamePane, Label scoreLabel, Node brick) {
+        gamePane.getChildren().remove(brick);
+        ball.setVelocity(ball.getDx(), -ball.getDy());
+        updateScore(scoreLabel);
+    }
+
+    private static void updateScore(Label scoreLabel) {
+        int score = Integer.parseInt(String.valueOf(scoreLabel.getText().charAt(scoreLabel.getText().length()-1)));
+        score++;
+        scoreLabel.setText("Score: " + score);
     }
 
     private static void handleLoss(Ball ball, Pane gamePane, Timeline gameLoop) {

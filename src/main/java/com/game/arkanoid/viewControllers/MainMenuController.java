@@ -18,14 +18,12 @@ public class MainMenuController {
     }
 
     public void startGame(ActionEvent actionEvent){
-
-        int level = ((Button) actionEvent.getSource()).getId().strip().charAt(5) - '0';
-        System.out.println(level);
+        int level = Integer.parseInt(String.valueOf(((Button) actionEvent.getSource()).getId().charAt(5)));
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(LaunchGUI.class.getResource("gameView.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 560, 800);
-            GameViewController controller = fxmlLoader.getController();
+            GameViewController gameViewController = fxmlLoader.getController();
 
             Stage stage = (Stage) vbox.getScene().getWindow();
             stage.setTitle("Arkanoid");
@@ -33,7 +31,7 @@ public class MainMenuController {
             stage.centerOnScreen();
             stage.show();
 
-            controller.initialize(level);
+            gameViewController.initialize(level);
         } catch (Exception e){
             System.out.println("Failed to load gameView.fxml");
             e.printStackTrace();
