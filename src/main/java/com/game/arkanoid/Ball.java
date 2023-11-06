@@ -7,21 +7,19 @@ public class Ball {
     private double x, y;
     private double dx, dy;
 
-    private double radius;
-    private Circle circle;
+    private final double radius;
+    private final Circle circle;
 
     public Ball(double x, double y, double radius) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-
-        circle = new Circle(x, y, radius, Color.RED);
+        circle = new Circle(x, y, radius, Color.WHITE);
     }
 
     public Circle getCircle() {
         return circle;
     }
-
     public void move() {
         x += dx;
         y += dy;
