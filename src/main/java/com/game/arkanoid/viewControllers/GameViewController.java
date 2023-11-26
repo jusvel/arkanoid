@@ -1,9 +1,9 @@
 package com.game.arkanoid.viewControllers;
 
-import com.game.arkanoid.Ball;
-import com.game.arkanoid.CollisionHandler;
 import com.game.arkanoid.LaunchGUI;
-import com.game.arkanoid.Paddle;
+import com.game.arkanoid.handlers.CollisionHandler;
+import com.game.arkanoid.objects.Ball;
+import com.game.arkanoid.objects.Paddle;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -13,19 +13,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import static com.game.arkanoid.helpers.Constants.*;
 
 public class GameViewController {
-    static final double PADDLE_SPEED = 3.0;
-    static final double BALL_RADIUS = 10.0;
-    static final int BRICK_WIDTH = 102;
-    static final int BRICK_HEIGHT = 30;
-    static final int GAP = 5;
-    private static final Color BRICK_COLOR = Color.rgb(255, 0, 0, 0.5);
-
     @FXML
     public Pane gamePane;
     @FXML
@@ -79,7 +72,7 @@ public class GameViewController {
     private void setUpBall() {
         ball = new Ball(260, 350, BALL_RADIUS);
         gamePane.getChildren().add(ball.getCircle());
-        ball.setVelocity(0, 3);
+        ball.setVelocity(0, BALL_SPEED);
     }
 
     private void setUpPaddle() {

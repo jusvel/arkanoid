@@ -1,5 +1,7 @@
-package com.game.arkanoid;
+package com.game.arkanoid.handlers;
 
+import com.game.arkanoid.objects.Ball;
+import com.game.arkanoid.objects.Paddle;
 import javafx.animation.Timeline;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
@@ -69,7 +71,7 @@ public class CollisionHandler {
     }
 
     private static void updateScore(Label scoreLabel) {
-        int score = Integer.parseInt(String.valueOf(scoreLabel.getText().charAt(scoreLabel.getText().length()-1)));
+        int score = Integer.parseInt(String.valueOf(scoreLabel.getText().split(" ")[1]));
         score++;
         scoreLabel.setText("Score: " + score);
     }
