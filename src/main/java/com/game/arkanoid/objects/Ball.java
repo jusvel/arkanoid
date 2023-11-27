@@ -3,7 +3,7 @@ package com.game.arkanoid.objects;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class Ball extends GameObject{
+public class Ball extends GameObject {
     private double dx, dy;
 
     private final double radius;

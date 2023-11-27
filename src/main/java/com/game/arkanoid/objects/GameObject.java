@@ -17,4 +17,8 @@ public abstract class GameObject {
     public double getY() {
         return y;
     }
+
+    public void setX(double x){
+        this.x = x;
+    }
 }

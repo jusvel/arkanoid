@@ -1,21 +1,26 @@
 package com.game.arkanoid.viewControllers;
 
-import com.game.arkanoid.LaunchGUI;
+import com.game.arkanoid.gameStates.GameState;
+import com.game.arkanoid.gameStates.PausedState;
+import com.game.arkanoid.gameStates.PlayingState;
 import com.game.arkanoid.handlers.CollisionHandler;
+import com.game.arkanoid.helpers.JavaFXUtils;
 import com.game.arkanoid.objects.Ball;
 import com.game.arkanoid.objects.Paddle;
+import com.game.arkanoid.objects.factories.BallFactory;
+import com.game.arkanoid.objects.factories.GameObjectFactory;
+import com.game.arkanoid.objects.factories.PaddleFactory;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import static com.game.arkanoid.helpers.Constants.*;
 
 public class GameViewController {
@@ -26,25 +31,33 @@ public class GameViewController {
     @FXML
     Label countDownLabel;
 
+    private GameState gameState;
+    private GameObjectFactory ballFactory;
+    private GameObjectFactory paddleFactory;
     private Paddle paddle;
     private Ball ball;
 
-    Timeline gameLoop;
+    public Timeline gameLoop;
 
     private boolean rightKeyPressed = false;
     private boolean leftKeyPressed = false;
 
     public void initialize(int level) {
+        gameState = new PlayingState(this);
+
+        ballFactory = new BallFactory(BALL_RADIUS);
+        paddleFactory = new PaddleFactory(PADDLE_SPEED);
+
         addBricksToGamePane(level);
         setUpPaddle();
         setUpBall();
         setUpKeybindings();
-
         setUpCountDownLabel();
-        countDownThenStartGame();
+
+        gameState.startGame();
     }
 
-    private void countDownThenStartGame() {
+    public void countDownThenStartGame() {
         Timeline countDown = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             int count = Integer.parseInt(countDownLabel.getText());
             count--;
@@ -70,13 +83,13 @@ public class GameViewController {
     }
 
     private void setUpBall() {
-        ball = new Ball(260, 350, BALL_RADIUS);
+        ball = (Ball) ballFactory.createGameObject(BALL_STARTING_X, BALL_STARTING_Y);
         gamePane.getChildren().add(ball.getCircle());
         ball.setVelocity(0, BALL_SPEED);
     }
 
     private void setUpPaddle() {
-        paddle = new Paddle(205, 660, PADDLE_SPEED);
+        paddle = (Paddle) paddleFactory.createGameObject(PADDLE_STARTING_X, PADDLE_STARTING_Y);
         gamePane.getChildren().add(paddle.getRectangle());
     }
 
@@ -91,7 +104,7 @@ public class GameViewController {
             } else if(event.getCode() == KeyCode.P){
                 toggleGamePause();
             } else if(event.getCode() == KeyCode.Q){
-                loadMainMenu();
+                JavaFXUtils.loadMainMenu(gamePane);
             }
         });
 
@@ -109,27 +122,31 @@ public class GameViewController {
     }
 
     public void movePaddle() {
-        Rectangle paddleRectangle = paddle.getRectangle();
-        double paddleX = paddleRectangle.getLayoutX();
-        double paddleWidth = paddleRectangle.getWidth();
-
-        if (rightKeyPressed && (paddleX + paddleWidth) < gamePane.getWidth()-205) {
-            paddleRectangle.setLayoutX(paddleX + paddle.getSpeed());
-        } else if (leftKeyPressed && paddleX > -205) {
-            paddleRectangle.setLayoutX(paddleX - paddle.getSpeed());
+        paddle.setX(paddle.getRectangle().getLayoutX());
+        if (rightKeyPressed && (paddle.getX() + PADDLE_WIDTH) < gamePane.getWidth()-(PADDLE_WIDTH*1.5)-PADDLE_SPEED) {
+            paddle.setSpeed(PADDLE_SPEED);
+            paddle.move();
+        } else if (leftKeyPressed && paddle.getX() > -(PADDLE_WIDTH*1.5)-PADDLE_SPEED) {
+            paddle.setSpeed(-PADDLE_SPEED);
+            paddle.move();
         }
     }
 
     private void addBricksToGamePane(int level) {
-        for (int i = 0; i < level*2; i++) {
-            for (int j = 0; j < 5; j++) {
-                int x = ((BRICK_WIDTH+GAP) * j)+GAP;
-                int y = ((BRICK_HEIGHT+GAP) * i)+GAP;
-                Rectangle brick = new Rectangle(x, y, BRICK_WIDTH, BRICK_HEIGHT);
-                brick.setFill(BRICK_COLOR);
-                brick.setId("brick");
-                gamePane.getChildren().add(brick);
-            }
+        final int bricksPerRow = 5;
+        final int totalRows = level * 2;
+
+        for (int i = 0; i < totalRows * bricksPerRow; i++) {
+            int row = i / bricksPerRow;
+            int column = i % bricksPerRow;
+
+            int x = ((BRICK_WIDTH + GAP) * column) + GAP;
+            int y = ((BRICK_HEIGHT + GAP) * row) + GAP;
+
+            Rectangle brick = new Rectangle(x, y, BRICK_WIDTH, BRICK_HEIGHT);
+            brick.setFill(BRICK_COLOR);
+            brick.setId("brick");
+            gamePane.getChildren().add(brick);
         }
     }
 
@@ -141,27 +158,17 @@ public class GameViewController {
         gamePane.getChildren().add(countDownLabel);
     }
 
-    private void toggleGamePause() {
-        if(gameLoop.getStatus() == Timeline.Status.RUNNING){
-            setUpCountDownLabel();
-            gameLoop.stop();
-        } else {
-            countDownThenStartGame();
-        }
+    public void setGameState(GameState newState) {
+        gameState = newState;
     }
 
-    private void loadMainMenu() {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(LaunchGUI.class.getResource("mainMenuView.fxml"));
-            Scene menuScene = new Scene(fxmlLoader.load(), 560, 800);
-            Stage stage = (Stage) gamePane.getScene().getWindow();
-            stage.setTitle("Arkanoid");
-            stage.setScene(menuScene);
-            stage.centerOnScreen();
-            stage.show();
-        } catch (Exception e){
-            System.out.println("Failed to load gameView.fxml");
-            e.printStackTrace();
+    public void toggleGamePause() {
+        if(gameState instanceof PlayingState){
+            setUpCountDownLabel();
+            gameLoop.stop();
+            gameState = new PausedState(this);
+        } else if(gameState instanceof PausedState){
+            gameState.resumeGame();
         }
     }
 }

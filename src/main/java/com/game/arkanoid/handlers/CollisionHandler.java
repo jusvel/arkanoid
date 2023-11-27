@@ -8,9 +8,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
+
+import static com.game.arkanoid.helpers.JavaFXUtils.showTextOnScreen;
 
 public class CollisionHandler {
     public static void checkCollisions(Ball ball, Paddle paddle, Pane gamePane, Label scoreLabel, Timeline gameLoop){
@@ -25,7 +24,7 @@ public class CollisionHandler {
     }
 
     private static void handleBallPaddleCollision(Ball ball, Bounds ballBounds, Bounds paddleBounds) {
-        if (ballBounds.intersects(paddleBounds)) {
+        if (checkBallPaddleCollision(ballBounds, paddleBounds)) {
             double ballCenterX = ball.getCircle().getCenterX();
             double paddleCenterX = paddleBounds.getMinX() + paddleBounds.getWidth() / 2;
 
@@ -90,14 +89,8 @@ public class CollisionHandler {
         }
     }
 
-    private static void showTextOnScreen(Pane gamePane, String text, Color color) {
-        Text lossText;
-        lossText = new Text(text);
-        lossText.setFont(Font.font("Arial", FontWeight.BOLD, 30));
-        lossText.setFill(color);
-        lossText.setVisible(true);
-        lossText.setX((gamePane.getWidth() - lossText.getLayoutBounds().getWidth()) / 2);
-        lossText.setY((gamePane.getHeight() - lossText.getLayoutBounds().getHeight()) / 2);
-        gamePane.getChildren().add(lossText);
+
+    public static boolean checkBallPaddleCollision(Bounds ballBounds, Bounds paddleBounds) {
+        return ballBounds.intersects(paddleBounds);
     }
 }

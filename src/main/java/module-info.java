@@ -11,4 +11,8 @@ module com.game.arkanoid {
     opens com.game.arkanoid.objects to javafx.fxml;
     exports com.game.arkanoid.handlers;
     opens com.game.arkanoid.handlers to javafx.fxml;
+    exports com.game.arkanoid.objects.factories;
+    opens com.game.arkanoid.objects.factories to javafx.fxml;
+    exports com.game.arkanoid.gameStates;
+    opens com.game.arkanoid.gameStates to javafx.fxml;
 }
